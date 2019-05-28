@@ -8,7 +8,7 @@ const SMTP = nodemailer.createTransport({
 });
 const MAIL_TEXT_TOP =
 `
-現在、メールサーバの個人容量が上限に達しています。
+現在、メールサーバの使用量が上限に達しています。
 メールボックス内の整理をお願いします。
 詳細： ${config.mailHeader.url}
 

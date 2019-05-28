@@ -5,7 +5,7 @@
   },
   "mailHeader": {
     "from": "alertmail@xxxxx.co.jp",
-    "subject": "[ALERT][要対応] メールサーバの容量が上限を超えました",
+    "subject": "[ALERT][要対応] メールサーバの使用量が上限を超えました",
     "domain": "@xxxxx.co.jp",
     "url": "https://www.google.com/",
     "contact": "contact@xxxxx.co.jp"
