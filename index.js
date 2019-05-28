@@ -10,7 +10,7 @@ const MAIL_TEXT_TOP =
 `
 現在、メールサーバの個人容量が上限に達しています。
 メールボックス内の整理をお願いします。
-詳細：｛コンフルURL｝
+詳細： ${config.mailHeader.url}
 
 ★情報★
 上限： ${config.size.max}MB
@@ -24,7 +24,7 @@ const MAIL_TEXT_BOTTOM =
 
 ※本メールへの返信は禁止とします。
 ※本メールは情報基盤WGが管理するシステムから送信されています。
-　お問い合わせ先：｛メールアドレス｝
+　お問い合わせ先： ${config.mailHeader.contact}
 `
 
 /**
@@ -63,7 +63,7 @@ const createMessage = (user, size) => {
 /**
  * メイン処理
  */
-(async () => {
+const main = async () => {
   // ファイルサーバからデータを取得（マシン上にマウント済みであること）
   const filePath = config.csv.directory + config.csv.filename;
   const data = await getDataFromFile(filePath);
@@ -83,4 +83,12 @@ const createMessage = (user, size) => {
       }
     });
   });
+};
+
+
+// node-cronを利用して定期実行する
+(() => {
+  const cron = require('node-cron');
+  // TODO: 現状、10秒間隔で実行
+  cron.schedule(config.schedule.cron, () => main());
 })();
