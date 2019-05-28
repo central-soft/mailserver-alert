@@ -1,0 +1,18 @@
+{
+  "smtp": {
+    "host": "localhost",
+    "port": 25
+  },
+  "mailHeader": {
+    "from": "alertmail@xxxxx.co.jp",
+    "subject": "[ALERT][要対応] メールサーバの容量が上限を超えました",
+    "domain": "@xxxxx.co.jp"
+  },
+  "csv": {
+    "directory": "./",
+    "filename": "mailserver_info.csv"
+  },
+  "size": {
+    "max": 256
+  }
+}
