@@ -42,7 +42,22 @@ const getDataFromFile = (filePath) => {
       resolve(data);
     }));
   });
-}
+};
+
+/**
+ * メール情報を作成する関数
+ * @param {string} user - 対象ユーザ名
+ * @param {string} size - 使用量
+ * @return {object} メール情報
+ */
+const createMessage = (user, size) => {
+  return {
+    from: config.mailHeader.from,
+    to: user + config.mailHeader.domain,
+    subject: config.mailHeader.subject,
+    text: MAIL_TEXT_TOP + `使用量： ${size}MB` + MAIL_TEXT_BOTTOM
+  }
+};
 
 
 /**
@@ -53,24 +68,12 @@ const getDataFromFile = (filePath) => {
   const filePath = config.csv.directory + config.csv.filename;
   const data = await getDataFromFile(filePath);
 
-  let overUserCont = 0;
   data.forEach((userInfo) => {
     // 上限未満の場合、スキップ
     if (userInfo.size < config.size.max) return;
-    overUserCont++;
-
-    // メール本文組み立て
-    let mailText = MAIL_TEXT_TOP +
-      `使用量： ${userInfo.size}MB` +
-      MAIL_TEXT_BOTTOM;
 
     // メール情報作成
-    let message = {
-      from: config.mailHeader.from,
-      to: userInfo.user + config.mailHeader.domain,
-      subject: config.mailHeader.subject,
-      text: mailText
-    }
+    let message = createMessage(userInfo.user, userInfo.size);
 
     // 送信
     SMTP.sendMail(message, (err, info) => {
