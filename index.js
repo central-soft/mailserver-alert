@@ -59,6 +59,26 @@ const createMessage = (user, size) => {
   }
 };
 
+/**
+ * CSVファイルが有効か検証する関数
+ * ※CSVは上書き連携される想定
+ * @param {object} data - データ
+ * @return {boolean} true:有効、false:無効
+ */
+const isValid = (data) => {
+  const moment = require('moment');
+
+  // 日付の確認
+  let targetDay = moment(data[0].date);
+  if (!targetDay.isBetween(moment().add(-7, 'days'), moment())) {
+    console.log(`CSVデータが古い：${targetDay.format('YYYY-MM-DD')}`);
+    return false;
+  }
+
+
+  return true;
+};
+
 
 /**
  * メイン処理
@@ -67,6 +87,12 @@ const main = async () => {
   // ファイルサーバからデータを取得（マシン上にマウント済みであること）
   const filePath = config.csv.directory + config.csv.filename;
   const data = await getDataFromFile(filePath);
+
+  // CSVの検証を行う
+  if (!isValid(data)) {
+    console.log('Invalid file.');
+    return;
+  }
 
   data.forEach((userInfo) => {
     // 上限未満の場合、スキップ
