@@ -1,5 +1,7 @@
 const config = require('config');
 const nodemailer = require('nodemailer');
+const moment = require('moment');
+moment.locale('ja');
 
 // メール準備
 const SMTP = nodemailer.createTransport({
@@ -37,46 +39,28 @@ const getDataFromFile = (filePath) => {
   const csv = require('csv');
   return new Promise((resolve, reject) => {
     const src = fs.createReadStream(filePath);
+    src.on('error', (err) => { reject(err); });
     src.pipe(csv.parse({columns: true}, (err, data) => {
-      if (err) { reject(err); return; }
+      if (err) { reject(err); }
       resolve(data);
     }));
   });
 };
 
+
 /**
  * メール情報を作成する関数
- * @param {string} user - 対象ユーザ名
+ * @param {string} mail - 対象メールアドレス
  * @param {string} size - 使用量
  * @return {object} メール情報
  */
-const createMessage = (user, size) => {
+const createMessage = (mail, size) => {
   return {
     from: config.mailHeader.from,
-    to: user + config.mailHeader.domain,
+    to: mail,
     subject: config.mailHeader.subject,
     text: MAIL_TEXT_TOP + `使用量： ${size}MB` + MAIL_TEXT_BOTTOM
   }
-};
-
-/**
- * CSVファイルが有効か検証する関数
- * ※CSVは上書き連携される想定
- * @param {object} data - データ
- * @return {boolean} true:有効、false:無効
- */
-const isValid = (data) => {
-  const moment = require('moment');
-
-  // 日付の確認
-  let targetDay = moment(data[0].date);
-  if (!targetDay.isBetween(moment().add(-7, 'days'), moment())) {
-    console.log(`CSVデータが古い：${targetDay.format('YYYY-MM-DD')}`);
-    return false;
-  }
-
-
-  return true;
 };
 
 
@@ -85,21 +69,26 @@ const isValid = (data) => {
  */
 const main = async () => {
   // ファイルサーバからデータを取得（マシン上にマウント済みであること）
-  const filePath = config.csv.directory + config.csv.filename;
-  const data = await getDataFromFile(filePath);
-
-  // CSVの検証を行う
-  if (!isValid(data)) {
-    console.log('Invalid file.');
+  let data;
+  // TODO: 現在テスト用に日付を固定中
+  const targetDate = moment('2019-01-01').day(-1); // {6 - 7} => {土曜 - 7} => {前回の土曜日}
+  const fileName = targetDate.format('YYYYMMDD') + config.csv.filename_bottom;
+  const filePath = config.csv.directory + fileName;
+  try {
+    data = await getDataFromFile(filePath);
+  } catch (err) {
+    console.log(`ファイルの読み込みに失敗しました：${filePath}`)
+    console.log(err);
     return;
   }
 
+  // メールアドレスごとに処理していく
   data.forEach((userInfo) => {
     // 上限未満の場合、スキップ
     if (userInfo.size < config.size.max) return;
 
     // メール情報作成
-    let message = createMessage(userInfo.user, userInfo.size);
+    const message = createMessage(userInfo.mail, userInfo.size);
 
     // 送信
     SMTP.sendMail(message, (err, info) => {

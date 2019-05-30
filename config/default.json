@@ -6,13 +6,12 @@
   "mailHeader": {
     "from": "alertmail@xxxxx.co.jp",
     "subject": "[ALERT][要対応] メールサーバの使用量が上限を超えました",
-    "domain": "@xxxxx.co.jp",
     "url": "https://www.google.com/",
     "contact": "contact@xxxxx.co.jp"
   },
   "csv": {
     "directory": "./",
-    "filename": "mailserver_info.csv"
+    "filename_bottom": "_mailcheck.csv"
   },
   "size": {
     "max": 256
