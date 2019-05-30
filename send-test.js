@@ -11,8 +11,8 @@ const SMTP = nodemailer.createTransport({
   const message = {
     from: 'test@mucho.co.jp',
     to: 'test@mucho.co.jp',
-    subject: config.mailHeader.subject,
-    text: MAIL_TEXT_TOP + `使用量： ${size}MB` + MAIL_TEXT_BOTTOM
+    subject: 'testmail',
+    text: 'testmail'
   };
   SMTP.sendMail(message, (err, info) => {
     if (err) {
