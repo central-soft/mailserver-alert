@@ -1,7 +1,9 @@
 {
   "smtp": {
     "host": "localhost",
-    "port": 25
+    "port": 25,
+    "user": "alertmail@xxxxx.co.jp",
+    "password": "abcdefg"
   },
   "mailHeader": {
     "from": "alertmail@xxxxx.co.jp",

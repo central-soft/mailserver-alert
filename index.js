@@ -6,7 +6,12 @@ moment.locale('ja');
 // メール準備
 const SMTP = nodemailer.createTransport({
   host: config.smtp.host,
-  port: config.smtp.port
+  port: config.smtp.port,
+  secure: true, //SSL
+  auth: {
+    user: config.smtp.user,
+    pass: config.smtp.password
+  }
 });
 const MAIL_TEXT_TOP =
 `
