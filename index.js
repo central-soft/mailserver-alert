@@ -7,7 +7,7 @@ moment.locale('ja');
 const SMTP = nodemailer.createTransport({
   host: config.smtp.host,
   port: config.smtp.port,
-  secure: true, //SSL
+  secure: false, //SSL
   auth: {
     user: config.smtp.user,
     pass: config.smtp.password
