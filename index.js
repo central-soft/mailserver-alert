@@ -8,10 +8,8 @@ const SMTP = nodemailer.createTransport({
   host: config.smtp.host,
   port: config.smtp.port,
   secure: false, //SSL
-  auth: {
-    user: config.smtp.user,
-    pass: config.smtp.password
-  }
+  user: config.smtp.user,
+  pass: config.smtp.password
 });
 const MAIL_TEXT_TOP =
 `
@@ -73,6 +71,8 @@ const createMessage = (mail, size) => {
  * メイン処理
  */
 const main = async () => {
+  const iconv = require("iconv-lite");
+
   // ファイルサーバからデータを取得（マシン上にマウント済みであること）
   let data;
   // TODO: 現在テスト用に日付を固定中
@@ -93,7 +93,7 @@ const main = async () => {
     if (userInfo.size < config.size.max) return;
 
     // メール情報作成
-    const message = createMessage(userInfo.mail, userInfo.size);
+    const message = iconv.encode(createMessage(userInfo.mail, userInfo.size), 'utf-8');
 
     // 送信
     SMTP.sendMail(message, (err, info) => {
