@@ -58,11 +58,12 @@ const getDataFromFile = (filePath) => {
  * @return {object} メール情報
  */
 const createMessage = (mail, size) => {
+  const iconv = require("iconv-lite");
   return {
     from: config.mailHeader.from,
     to: mail,
     subject: config.mailHeader.subject,
-    text: MAIL_TEXT_TOP + `使用量： ${size}MB` + MAIL_TEXT_BOTTOM
+    text: iconv.encode(MAIL_TEXT_TOP + `使用量： ${size}MB` + MAIL_TEXT_BOTTOM, 'utf-8')
   }
 };
 
@@ -71,7 +72,6 @@ const createMessage = (mail, size) => {
  * メイン処理
  */
 const main = async () => {
-  const iconv = require("iconv-lite");
 
   // ファイルサーバからデータを取得（マシン上にマウント済みであること）
   let data;
@@ -93,7 +93,7 @@ const main = async () => {
     if (userInfo.size < config.size.max) return;
 
     // メール情報作成
-    const message = iconv.encode(createMessage(userInfo.mail, userInfo.size), 'utf-8');
+    const message = createMessage(userInfo.mail, userInfo.size);
 
     // 送信
     SMTP.sendMail(message, (err, info) => {
