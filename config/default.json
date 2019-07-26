@@ -13,7 +13,8 @@
   },
   "csv": {
     "directory": "./",
-    "filename_bottom": "_mailcheck.csv"
+    "filename_bottom": "_mailcheck.csv",
+    "summaryDataFileName": "mailserver_disk_space.csv"
   },
   "size": {
     "max": 256

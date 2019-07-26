@@ -67,6 +67,35 @@ const createMessage = (mail, size) => {
   }
 };
 
+/**
+ * 実行結果のメール情報を作成する関数
+ * @param {string} allAccontCount - 全ユーザ数
+ * @param {string} alertTargetCount - アラート対象ユーザ数
+ * @param {string} capacitySize - サーバ残容量
+ * @return {object} メール情報
+ */
+const createSummaryMessage = (allAccontCount, alertTargetCount, capacitySize) => {
+  const iconv = require("iconv-lite");
+  let summaryMailTitle = '【通知】アラートメール送信結果';
+  let summaryMailBody =
+`
+メールサーバーの使用量が${config.size.max}MBを超えたユーザを対象に
+アラートメールを送信しました。
+
+総ユーザ数：${allAccontCount}
+アラート対象ユーザ数：${alertTargetCount}
+
+メールサーバ残容量：${capacitySize}MB
+`
+
+  return {
+    from: config.mailHeader.from,
+    to: config.mailHeader.contact,
+    subject: summaryMailTitle,
+    text: iconv.encode(summaryMailBody, 'utf-8')
+  }
+};
+
 
 /**
  * メイン処理
@@ -75,8 +104,7 @@ const main = async () => {
 
   // ファイルサーバからデータを取得（マシン上にマウント済みであること）
   let data;
-  // TODO: 現在テスト用に日付を固定中
-  const targetDate = moment('2019-01-01').day(-1); // {6 - 7} => {土曜 - 7} => {前回の土曜日}
+  const targetDate = moment().day(-1); // {6 - 7} => {土曜 - 7} => {前回の土曜日}
   const fileName = targetDate.format('YYYYMMDD') + config.csv.filename_bottom;
   const filePath = config.csv.directory + fileName;
   try {
@@ -88,6 +116,7 @@ const main = async () => {
   }
 
   // メールアドレスごとに処理していく
+  let alertTargetCount = 0;
   data.forEach((userInfo) => {
     // 上限未満の場合、スキップ
     if (userInfo.size < config.size.max) return;
@@ -96,6 +125,7 @@ const main = async () => {
     const message = createMessage(userInfo.mail, userInfo.size);
 
     // 送信
+    alertTargetCount++;
     SMTP.sendMail(message, (err, info) => {
       if (err) {
         console.log('send failed: ' + message.to);
@@ -103,12 +133,33 @@ const main = async () => {
       }
     });
   });
+
+  // 実行結果を特定のメールアドレスに送信（現状Contactのアドレスを使用）
+  let capacitySize;
+  try {
+    serverData = await getDataFromFile(config.csv.directory + config.summaryDataFileName);
+    capacitySize = serverData[serverData.length - 1].space; // 最終行のspaceを取得
+  } catch (err) {
+    console.log(`ファイルの読み込みに失敗しました：${filePath}`)
+    console.log(err);
+    return;
+  }
+
+  const summaryMessage = createSummaryMessage(data.length, allAccontCount, capacitySize);
+  SMTP.sendMail(summaryMessage, (err, info) => {
+    if (err) {
+      console.log('send failed: ' + message.to);
+      console.log(err.message);
+    }
+  });
 };
 
 
 // node-cronを利用して定期実行する
 (() => {
   const cron = require('node-cron');
-  // TODO: 現状、10秒間隔で実行
+  // CRONでの実行（間隔設定はConfigファイルで行う）
   cron.schedule(config.schedule.cron, () => main());
+  // 一度だけ実行（テストに使用・通常はコメントアウト）
+  // main();
 })();
