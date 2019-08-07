@@ -137,7 +137,7 @@ const main = async () => {
   // 実行結果を特定のメールアドレスに送信（現状Contactのアドレスを使用）
   let capacitySize;
   try {
-    serverData = await getDataFromFile(config.csv.directory + config.summaryDataFileName);
+    serverData = await getDataFromFile(config.csv.directory + config.csv.summaryDataFileName);
     capacitySize = serverData[serverData.length - 1].space; // 最終行のspaceを取得
   } catch (err) {
     console.log(`ファイルの読み込みに失敗しました：${filePath}`)
@@ -145,7 +145,7 @@ const main = async () => {
     return;
   }
 
-  const summaryMessage = createSummaryMessage(data.length, allAccontCount, capacitySize);
+  const summaryMessage = createSummaryMessage(data.length, alertTargetCount, capacitySize);
   SMTP.sendMail(summaryMessage, (err, info) => {
     if (err) {
       console.log('send failed: ' + message.to);
