@@ -10,7 +10,7 @@
   "author": "mucho",
   "license": "ISC",
   "dependencies": {
-    "config": "^3.1.0",
+    "config": "^3.3.8",
     "csv": "^5.1.1",
     "iconv-lite": "^0.4.24",
     "moment": "^2.24.0",
